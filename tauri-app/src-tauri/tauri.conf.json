@@ -23,6 +23,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": "all",
     "icon": [
       "icons/32x32.png",
@@ -31,5 +32,16 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDlCREMwMUQzRDBGMDQ1MkYKUldRdlJmRFEwd0hjbTZsaUNja1daRlJhNGY4dW1SeGRMU2tyMGlXSGhnVVJpaFkzYXRabktHWG4K",
+      "endpoints": [
+        "https://github.com/JJBars/TO-DO-LIST/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

@@ -1,4 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { isTauri } from "@tauri-apps/api/core";
+import { relaunch } from "@tauri-apps/plugin-process";
+import { check, type Update } from "@tauri-apps/plugin-updater";
 import "./App.css";
 
 type Priority = "high" | "medium" | "low";
@@ -41,8 +44,16 @@ function App() {
   const [newSubtasks, setNewSubtasks] = useState("");
   const [expandedTasks, setExpandedTasks] = useState<number[]>([]);
   const [subtaskDrafts, setSubtaskDrafts] = useState<Record<number, string>>({});
+  const [availableUpdate, setAvailableUpdate] = useState<Update | null>(null);
+  const [updateStatus, setUpdateStatus] = useState<"idle" | "checking" | "current" | "available" | "downloading" | "error">("idle");
+  const [updateError, setUpdateError] = useState("");
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
+  const [updateDismissed, setUpdateDismissed] = useState(false);
 
   useEffect(() => localStorage.setItem("todo-tasks", JSON.stringify(tasks)), [tasks]);
+  useEffect(() => {
+    if (isTauri() && !import.meta.env.DEV) void checkForUpdates();
+  }, []);
   const today = "2026-11-23";
 
   const visibleTasks = useMemo(() => tasks.filter((task) => {
@@ -59,6 +70,47 @@ function App() {
   const pendingCount = allItems.filter((task) => !task.completed).length;
   const completedCount = allItems.filter((task) => task.completed).length;
   const progress = allItems.length ? Math.round((completedCount / allItems.length) * 100) : 0;
+  const canUpdate = isTauri() && !import.meta.env.DEV;
+
+  async function checkForUpdates() {
+    if (updateStatus === "checking" || updateStatus === "downloading") return;
+    setUpdateStatus("checking");
+    setUpdateError("");
+    setUpdateDismissed(false);
+    try {
+      if (availableUpdate) await availableUpdate.close();
+      const update = await check({ timeout: 20_000 });
+      setAvailableUpdate(update);
+      setUpdateStatus(update ? "available" : "current");
+    } catch (error) {
+      setUpdateError(error instanceof Error ? error.message : String(error));
+      setUpdateStatus("error");
+    }
+  }
+
+  async function installUpdate() {
+    if (!availableUpdate) return;
+    setUpdateStatus("downloading");
+    setDownloadProgress(0);
+    setUpdateError("");
+    let downloaded = 0;
+    let contentLength: number | undefined;
+    try {
+      await availableUpdate.downloadAndInstall((event) => {
+        if (event.event === "Started") {
+          contentLength = event.data.contentLength;
+          setDownloadProgress(contentLength ? 0 : null);
+        } else if (event.event === "Progress") {
+          downloaded += event.data.chunkLength;
+          if (contentLength) setDownloadProgress(Math.min(100, Math.round((downloaded / contentLength) * 100)));
+        }
+      });
+      await relaunch();
+    } catch (error) {
+      setUpdateError(error instanceof Error ? error.message : String(error));
+      setUpdateStatus("error");
+    }
+  }
 
   function addTask(event: FormEvent) {
     event.preventDefault();
@@ -140,6 +192,9 @@ function App() {
       <main className="main-content">
         <header className="topbar">
           <div className="search-box"><Icon name="search" size={16}/><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar tareas..."/></div>
+          <button className="update-check-button" onClick={() => void checkForUpdates()} disabled={!canUpdate || updateStatus === "checking" || updateStatus === "downloading"}>
+            {updateStatus === "checking" ? "Buscando..." : updateStatus === "downloading" ? "Instalando..." : updateStatus === "current" ? "App actualizada" : updateStatus === "available" ? "Actualización disponible" : "Buscar actualizaciones"}
+          </button>
           <div className="date-chip"><span>Lunes</span><strong>23 noviembre</strong></div>
           <button className="avatar" aria-label="Perfil">B</button>
         </header>
@@ -149,6 +204,24 @@ function App() {
             <div><p>Organiza tu día</p><h1>{navItems.find((item) => item.id === filter)?.label}</h1></div>
             <span className="task-total">{visibleTasks.length} tareas</span>
           </div>
+          {updateStatus === "available" && availableUpdate && !updateDismissed && (
+            <section className="update-notice" aria-live="polite">
+              <div className="update-notice-copy">
+                <strong>Nueva versión disponible: {availableUpdate.version}</strong>
+                <p>{availableUpdate.body || "Actualiza Dayly para obtener la última versión."}</p>
+              </div>
+              <div className="update-actions">
+                <button className="install-update-button" onClick={() => void installUpdate()}>Instalar y reiniciar</button>
+                <button className="dismiss-update-button" onClick={() => setUpdateDismissed(true)}>Más tarde</button>
+              </div>
+            </section>
+          )}
+          {updateStatus === "downloading" && (
+            <div className="update-feedback" role="status">Descargando actualización{downloadProgress === null ? "..." : `: ${downloadProgress}%`}</div>
+          )}
+          {updateStatus === "current" && <div className="update-feedback" role="status">Dayly está actualizado.</div>}
+          {updateStatus === "error" && <div className="update-feedback update-error" role="alert">No se pudo verificar o instalar la actualización: {updateError}</div>}
+          {!canUpdate && <div className="update-feedback">La actualización estará disponible en la aplicación instalada.</div>}
           <form className="add-task" onSubmit={addTask}>
             <div className="task-form-row">
               <button className="add-button" type="submit" aria-label="Añadir tarea"><Icon name="plus" size={20}/></button>

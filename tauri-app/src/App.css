@@ -22,7 +22,7 @@ button { cursor: pointer; }
 .progress-track { height: 5px; margin-top: 12px; border-radius: 5px; background: #3a3c43; overflow: hidden; }
 .progress-track div { height: 100%; border-radius: 5px; background: #f4c64c; transition: width 300ms ease; }
 .main-content { min-width: 0; height: 100vh; overflow: hidden; }
-.topbar { height: 72px; display: grid; grid-template-columns: minmax(220px,390px) 1fr auto; align-items: center; gap: 16px; padding: 0 38px; border-bottom: 1px solid #eaebed; background: rgba(255,255,255,.78); }
+.topbar { height: 72px; display: grid; grid-template-columns: minmax(160px,1fr) auto auto auto; align-items: center; gap: 16px; padding: 0 38px; border-bottom: 1px solid #eaebed; background: rgba(255,255,255,.78); }
 .search-box { height: 38px; display: flex; align-items: center; gap: 9px; padding: 0 12px; border: 1px solid #e7e8ea; border-radius: 9px; color: #9a9da5; background: #fafafa; }
 .search-box input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: #303136; font-size: 13px; }
 .search-box input::placeholder { color: #adb0b6; }
@@ -30,11 +30,25 @@ button { cursor: pointer; }
 .date-chip span { color: #9a9da4; font-size: 11px; }
 .date-chip strong { margin-top: 3px; color: #4a4c52; font-size: 12px; }
 .avatar { width: 36px; height: 36px; border: 0; border-radius: 50%; background: #f0c95c; color: #45403a; font-weight: 750; box-shadow: inset 0 0 0 3px rgba(255,255,255,.7); }
+.update-check-button { min-height: 36px; border: 1px solid #e8e4d7; border-radius: 8px; padding: 0 11px; color: #645938; background: #fbf8ed; font-size: 11px; white-space: nowrap; }
+.update-check-button:hover:not(:disabled) { border-color: #e2cb78; background: #f8f2df; }
+.update-check-button:disabled { cursor: default; opacity: .68; }
 .content { height: calc(100vh - 72px); overflow-y: auto; padding: 34px 38px 50px; }
 .page-heading { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 22px; }
 .page-heading p { margin: 0 0 4px; color: #9a9da4; font-size: 12px; }
 .page-heading h1 { margin: 0; color: #292a2e; font-size: 27px; letter-spacing: -1px; }
 .task-total { color: #a1a3a8; font-size: 12px; }
+.update-notice { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: -5px 0 16px; border: 1px solid #eadcae; border-radius: 10px; padding: 13px 15px; background: #fffdf6; }
+.update-notice-copy { min-width: 0; }
+.update-notice-copy strong { color: #51482f; font-size: 13px; }
+.update-notice-copy p { margin: 4px 0 0; color: #848078; font-size: 11px; white-space: pre-line; }
+.update-actions { display: flex; flex-shrink: 0; gap: 7px; }
+.install-update-button, .dismiss-update-button { min-height: 34px; border: 0; border-radius: 7px; padding: 0 10px; font-size: 11px; }
+.install-update-button { color: #393321; background: #f2cf66; font-weight: 650; }
+.install-update-button:hover { background: #e9c34e; }
+.dismiss-update-button { color: #77766f; background: #f2f1ec; }
+.update-feedback { margin: -8px 0 15px; border-radius: 7px; padding: 9px 11px; color: #77776d; background: #f1f2ed; font-size: 11px; }
+.update-error { color: #9c4e47; background: #f9eeec; }
 .add-task { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; padding: 10px; border: 1px solid #e8e9ec; border-radius: 11px; background: #fff; box-shadow: 0 3px 12px rgba(36,38,43,.025); }
 .task-form-row { display: grid; grid-template-columns: 34px minmax(0,1fr) 112px 82px 130px; align-items: center; gap: 8px; }
 .add-button { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 8px; background: #f2c84e; color: #4d483b; }
@@ -83,4 +97,4 @@ button { cursor: pointer; }
 .empty-state div { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: #eceeea; color: #858d84; }
 .empty-state h2 { margin: 14px 0 4px; color: #696b70; font-size: 15px; }
 .empty-state p { margin: 0; font-size: 12px; }
-@media (max-width: 850px) { .app-shell { grid-template-columns:190px minmax(0,1fr); } .topbar, .content { padding-left:24px; padding-right:24px; } .task-form-row { grid-template-columns:34px minmax(120px,1fr) 104px 76px; } .date-input { display:none; } }
+@media (max-width: 850px) { .app-shell { grid-template-columns:190px minmax(0,1fr); } .topbar, .content { padding-left:24px; padding-right:24px; } .topbar { gap:8px; } .update-check-button { max-width:130px; overflow:hidden; text-overflow:ellipsis; } .date-chip { display:none; } .task-form-row { grid-template-columns:34px minmax(120px,1fr) 104px 76px; } .date-input { display:none; } }
